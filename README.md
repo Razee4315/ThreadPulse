@@ -8,6 +8,10 @@
 
 One file · No install · Nothing leaves your machine
 
+**[Try the hosted demo](https://razee4315.github.io/ThreadPulse/)** — the full UI running on a local
+heuristic in your browser. The real model judgement needs the tiny relay server this app ships with,
+so run it locally for genuine scores.
+
 ![Node](https://img.shields.io/badge/Node.js-18%2B-2C4BCF?logo=node.js&logoColor=white)
 ![Dependencies](https://img.shields.io/badge/dependencies-0-2C4BCF)
 ![Data](https://img.shields.io/badge/data-local--only-2C4BCF)
@@ -78,15 +82,23 @@ write about them is scored. No analytics, no telemetry, no dependencies.
 
 ## Deploying it somewhere shared
 
-There's no hosted demo on purpose — TypeSafe's API doesn't allow browser calls from other sites
-(CORS), so the app needs its tiny server next to it, wherever it runs. Two one-step options:
+There's no hosted demo *with real scores* on purpose — TypeSafe's API doesn't allow browser calls
+from other sites (CORS), so the app needs its tiny server next to it, wherever it runs. Three ways
+to put it somewhere:
+
+- **GitHub Pages** — the included workflow deploys the UI as a
+  [hosted demo](https://razee4315.github.io/ThreadPulse/) that scores with the local heuristic.
+  The page detects the missing relay itself and labels it; no key is ever entered there
+- **Render** — the button below reads the included `render.yaml` and stands up a free service
+  with the real model behind it
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Razee4315/ThreadPulse)
 
-- **Render** — the button above reads the included `render.yaml` and stands up a free service.
-  Or with Docker anywhere: `docker build -t threadpulse . && docker run -p 8787:8787 threadpulse`
-- A hosted copy holds no key and stores nothing — every visitor brings their own TypeSafe key,
-  which stays in *their* browser exactly as it does locally
+- **Docker** — anywhere containers run:
+  `docker build -t threadpulse . && docker run -p 8787:8787 threadpulse`
+
+Any hosted copy holds no key and stores nothing — every visitor brings their own TypeSafe key,
+which stays in *their* browser exactly as it does locally.
 
 ## License
 

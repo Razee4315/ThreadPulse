@@ -1007,6 +1007,7 @@ details.more[open]>summary svg{transform:rotate(90deg)}
     <!-- ---------- method ---------- -->
     <div class="panel" id="tabMethod" role="tabpanel" aria-labelledby="tabMethodBtn">
       <div class="method">
+        <p id="demoNote" hidden><b>You are viewing the hosted demo.</b> A static site cannot call TypeSafe from the browser - the API sends no CORS header - so scoring here runs the small local heuristic described under Offline mode. Download this file and run it locally with a TypeSafe key for the real eight judgements: the bundled server relays the requests and makes them work.</p>
         <h4>What is actually asked</h4>
         <p>TypeSafe is a judge, not a writer. One draft goes out with eight independent judgements attached: two labels (how the post reads, what pulls people in), three graded qualities, and three risk checks. Nothing here is one opinion averaged into a number.</p>
 
@@ -1160,6 +1161,25 @@ var level = store.get("level", "medium");
 var lastAction = null;
 var busy = false;
 
+/* Two ways the page can run. Served by the bundled relay (localhost, Render,
+   Docker) the model is reachable and scoring is real. On a static host such
+   as GitHub Pages there is no relay, and TypeSafe cannot be called from a
+   browser directly - the API sends no CORS header - so the page runs its
+   built-in local heuristic instead and says so. The probe below tells the
+   two apart. */
+var mode = "checking";
+fetch("/health").then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+  mode = j && j.service === "threadpulse" ? "full" : "demo";
+}).catch(function () { mode = "demo"; }).then(function () { modeReady(); });
+function modeReady() {
+  syncButtons();
+  if (mode !== "demo") return;
+  $("demoBtn").hidden = true;
+  $("demoNote").hidden = false;
+  setConn("", "Hosted demo");
+  toast("info", "Hosted demo", "Scoring here is the built-in local heuristic. Run ThreadPulse locally with a TypeSafe key for the real model.");
+}
+
 /* ============================================================
    toasts
 ============================================================ */
@@ -1213,7 +1233,13 @@ function openSetup(open) {
   $("setupBtn").setAttribute("aria-expanded", open ? "true" : "false");
   if (open) $("apiKey").focus();
 }
-$("setupBtn").addEventListener("click", function () { openSetup($("setup").hidden); });
+$("setupBtn").addEventListener("click", function () {
+  if (mode === "demo") {
+    toast("info", "Hosted demo", "No key is needed here - scoring runs in your browser. Run ThreadPulse locally to use your TypeSafe key.");
+    return;
+  }
+  openSetup($("setup").hidden);
+});
 var storedKey = store.get("key", "");
 if (storedKey) { $("apiKey").value = storedKey; setConn("", "Key saved"); } else setConn("", "No API key");
 $("apiKey").addEventListener("input", function () {
@@ -1302,7 +1328,7 @@ function updateCounters() {
   else { h.textContent = "Reddit cuts titles at 300 characters."; h.className = "hint"; }
 }
 function syncButtons() {
-  $("analyzeBtn").disabled = busy || !$("title").value.trim();
+  $("analyzeBtn").disabled = busy || mode === "checking" || !$("title").value.trim();
   $("demoBtn").disabled = busy;
 }
 FIELDS.forEach(function (id) {
@@ -1630,6 +1656,7 @@ function analyze() {
     toast("bad", "A title is required", "It is the one field the score cannot be built without."); return;
   }
   $("title").removeAttribute("aria-invalid");
+  if (mode === "demo") { runDemo(); return; }
   if (!key()) { openSetup(true); toast("info", "Add your API key", "Or use Offline for a rough local estimate."); return; }
   lastAction = analyze;
   setBusy(true); showTab("Reading"); showView("viewLoading");
@@ -1688,7 +1715,9 @@ function runDemo() {
   var r = { model: "offline estimate", answers: heuristicAnswers(st) };
   render(r, st, "demo"); saveRun(r, st, "demo");
   pool = null; rewrite.options = []; renderRewriteEmpty();
-  toast("info", "Offline estimate", "No model was called. Add a key for a real reading.");
+  toast("info", "Offline estimate", mode === "demo"
+    ? "The hosted demo runs on the local heuristic. Run ThreadPulse locally with a key for the real model."
+    : "No model was called. Add a key for a real reading.");
 }
 $("demoBtn").addEventListener("click", runDemo);
 $("emptyDemo").addEventListener("click", runDemo);
@@ -2232,7 +2261,7 @@ $("copyImprovedBtn").addEventListener("click", function () {
 document.addEventListener("keydown", function (e) {
   if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
     e.preventDefault();
-    if (!busy && $("title").value.trim()) analyze();
+    if (!busy && mode !== "checking" && $("title").value.trim()) analyze();
     return;
   }
   if (e.key === "Escape" && !$("setup").hidden) { openSetup(false); $("setupBtn").focus(); return; }
