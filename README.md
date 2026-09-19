@@ -76,6 +76,18 @@ Your API key, drafts, and run history never leave your machine — the bundled s
 requests to TypeSafe's API and keeps no logs. Images stay in the page: only the description you
 write about them is scored. No analytics, no telemetry, no dependencies.
 
+## Deploying it somewhere shared
+
+There's no hosted demo on purpose — TypeSafe's API doesn't allow browser calls from other sites
+(CORS), so the app needs its tiny server next to it, wherever it runs. Two one-step options:
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Razee4315/ThreadPulse)
+
+- **Render** — the button above reads the included `render.yaml` and stands up a free service.
+  Or with Docker anywhere: `docker build -t threadpulse . && docker run -p 8787:8787 threadpulse`
+- A hosted copy holds no key and stores nothing — every visitor brings their own TypeSafe key,
+  which stays in *their* browser exactly as it does locally
+
 ## License
 
 [MIT](LICENSE)

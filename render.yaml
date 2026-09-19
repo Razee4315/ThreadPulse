@@ -1,0 +1,16 @@
+# Render blueprint — deploys ThreadPulse as a free web service.
+# Click "Deploy to Render" in the README, or on render.com choose
+# "New +" -> "Blueprint" and point it at this repository.
+services:
+  - type: web
+    name: threadpulse
+    runtime: node
+    plan: free
+    healthCheckPath: /health
+    startCommand: node threadpulse.mjs
+    envVars:
+      # the app binds loopback by default; a public host needs all interfaces
+      - key: HOST
+        value: 0.0.0.0
+      - key: NODE_VERSION
+        value: "22"
