@@ -6,3 +6,6 @@ node_modules/
 
 # pages build output
 dist/
+
+# local demo clip workspace
+demo/
